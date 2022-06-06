@@ -1,12 +1,36 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import * as React from 'react';
+import { StyleSheet} from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useFonts } from 'expo-font';
+
+import LoginScreen from './screens/LoginScreen';
+import SignUpScreen from './screens/SignupScreen';
+import NavBar from './components/NavBar';
+
+const Stack = createNativeStackNavigator();
+
 
 export default function App() {
+  let [fontsLoaded] = useFonts({
+    'Poppins-Regular' : require("./assets/fonts/Poppins-Regular.ttf"),
+    'Poppins-Bold' : require("./assets/fonts/Poppins-Bold.ttf"),
+    'Poppins-Light' : require("./assets/fonts/Poppins-Light.ttf"),
+    "JosefinSans-Regular" : require("./assets/fonts/JosefinSans-Regular.ttf")
+  });
+ 
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Login">
+        <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }}/>
+        <Stack.Screen name="SignUp" component={SignUpScreen} options={{ headerShown: false }}/>
+        <Stack.Screen name="Home" component={NavBar} options={{ headerShown: false }}/>
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 
