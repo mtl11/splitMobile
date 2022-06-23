@@ -28,7 +28,7 @@ return (
     })}
     >
     <Tab.Screen name="Max Reps" component={WorkoutScreen}/>
-    <Tab.Screen name="Splits" component={SplitScreen}/>
+    <Tab.Screen name="Splits" component={SplitScreen} options={{ headerShown: false }}/>
     <Tab.Screen name="Settings" component={SettingsScreen}/>
     </Tab.Navigator>
 );

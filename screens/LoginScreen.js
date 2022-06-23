@@ -12,7 +12,7 @@ const LoginScreen = props => {
         <SafeAreaView style={styles.container}>
             <View style={styles.infoContainer}>
                 <Text style ={styles.headerName} >
-                Split
+                split
                 </Text>
                 <Image 
                 style = {styles.img}

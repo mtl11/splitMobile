@@ -18,25 +18,18 @@ const SingleSplitEmpty = props =>{
 
 const styles = StyleSheet.create({
     alertView:{
-        // borderWidth:1,
         alignItems:"center",
         alignContent:"center",
         justifyContent: "center",
         flex:1
     },
     container:{
-        marginTop: "5%",
-        // backgroundColor: "white",
-        width: "92%",
-        height: "70%",
+        marginTop: "3%",
+        marginBottom: "3%",
+        width: "100%",
+        height: "92.5%",
         alignSelf: "center",
-        borderRadius: 20,
-        shadowOffset: {
-            width:  0,
-            height: 1
-        },
-        shadowOpacity: .1,
-        shadowRadius: 5,
+        backgroundColor: '#efefef'
     },
     splitName:{
         fontFamily: fonts.main,

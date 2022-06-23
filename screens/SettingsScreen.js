@@ -17,7 +17,7 @@ const SettingsScreen = props =>{
                     Split
                 </Text>
             </View>
-            <View style={styles.settingsBar}>
+            <View style={[styles.settingsBar, {borderTopWidth:1}]}>
                 <Text style ={styles.settingsText}>
                     Dark Mode 
                 </Text>
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     settingsBar:{
         backgroundColor: 'white',
         borderBottomWidth:1,
-        borderTopWidth:1,
+        // borderTopWidth:1,
         borderTopColor: 'grey',
         borderBottomColor: 'grey',
         // marginBottom: '5%',
@@ -98,12 +98,12 @@ const styles = StyleSheet.create({
     },
     iconContainer:{
         alignSelf:"center",
-        margin: '5%',
+        marginTop: '15%',
         marginBottom: '15%'
     },
     infoContainer:{
         alignSelf: 'center',
-        marginTop: '10%',
+        marginTop: '15%',
         opacity: '.5'
     },
     infoText:{
