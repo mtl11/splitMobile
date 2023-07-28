@@ -1,6 +1,8 @@
 export default {
-    primary: '#05f7c0',
+    background: '#333333',
+    icon: "#FFA500",
+    buttonAccent: "#FFA500",
     primaryGray: "#EEEEEE",
-    secondary: "#A9A9A9"
+    secondary: "#778080"
     
 }

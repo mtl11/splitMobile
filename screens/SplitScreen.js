@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View , Image, TouchableOpacity, TextInput, SafeAreaView} from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, TextInput, SafeAreaView, Animated, } from 'react-native';
 import React, { useState } from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,88 +6,142 @@ import color from '../constants/color';
 import fonts from '../constants/fonts';
 import SingleSplitEmpty from '../components/SingleSplitEmpty';
 import SplitFlatList from '../components/SplitFlatList';
-
-const SplitScreen = props =>{
+import { TabView, SceneMap } from 'react-native-tab-view';
+import AddExcercise from "../components/splits/AddExcercise";
+const SplitScreen = props => {
     const dummyDataPull = null;
-    const dummyDataPush = {Eggs:"eggs"};
+    const dummyDataPush = { Eggs: "eggs" };
     const dummyDataLegs = [{
-            name:"Bench Press",
-            complete: false
-        },
-        {
-            name: "Dips",
-            complete: true
-        }
+        name: "Bench Press",
+        complete: false
+    },
+    {
+        name: "Dips",
+        complete: true
+    }
     ];
     const [currentData, setCurrentData] = useState(dummyDataPush);
     const [currentSplit, setCurrentSplit] = useState("Push")
+    const [showAddModal, setShowAddModal] = useState(false);
 
-    const changeSplit = () => {
-        if (currentSplit === "Push") {
-            setCurrentSplit("Pull");
-            setCurrentData(dummyDataPull);
-        }
-        else if (currentSplit == "Pull") {
-            setCurrentSplit("Legs");
-            setCurrentData(dummyDataLegs);
-        }
-        else {
-            setCurrentSplit("Push");
-            setCurrentData(dummyDataPush);
-        }
+    const MaxReps = () => (
+        <View></View>
+    );
+    const Splits = () => (
+        <View></View>
+    );
+    const Profile = () => (
+        <View></View>
+    );
+
+    const renderScene = SceneMap({
+        first: MaxReps,
+        second: Splits,
+        third: Profile
+    });
+
+    const routes = [
+        { key: 'first', title: 'Push' },
+        { key: 'second', title: 'Pull' },
+        { key: 'third', title: 'Legs' }
+    ];
+
+    const [index, setIndex] = React.useState(0);
+    const renderTabBar = (props) => {
+        const inputRange = props.navigationState.routes.map((x, i) => i);
+        return (
+            <View style={{
+                flexDirection: 'row',
+                borderColor: "white",
+            }}>
+                {props.navigationState.routes.map((route, i) => {
+                    const opacity = props.position.interpolate({
+                        inputRange,
+                        outputRange: inputRange.map((inputIndex) =>
+                            inputIndex === i ? 1 : 0.5
+                        ),
+                    });
+
+                    return (
+                        <TouchableOpacity
+                            key={i}
+                            style={{
+                                flex: 1,
+                                alignItems: 'center',
+                            }}
+                            onPress={() => { setIndex(i) }}
+                        >
+                            <View style={[styles.tabTextContainer]}>
+                                <Animated.Text style={[{
+                                    fontFamily: fonts.main, color: "white", fontSize: 18
+                                }, { opacity }]}>{route.title}</Animated.Text>
+                            </View>
+                            {index == i && <View style={[{ borderWidth: 1, borderColor: "white" }, { width: "50%" }]}></View>}
+                        </TouchableOpacity>
+                    );
+                })}
+            </View>
+        );
     }
-    
     return (
-        <SafeAreaView style={{backgroundColor: color.primary}}>
+        <SafeAreaView style={{ backgroundColor: color.background }}>
             <View style={styles.headerContainer}>
-                <TouchableOpacity  onPress={()=>changeSplit()}>
-                    <MaterialCommunityIcons name="rotate-3d-variant" size={36} color="black" />
-                </TouchableOpacity>
-                    <Text style={styles.headerText}>
-                        {currentSplit} 
+                <TouchableOpacity onPress={()=>{setShowAddModal(true)}}
+                style={{ borderWidth: 1.5, borderRadius: 100, width: "25%", borderColor: color.buttonAccent }}>
+                    <Text style={{
+                        fontSize: 18,
+                        fontFamily: fonts.mainBold,
+                        color: color.buttonAccent,
+                        textAlign: "center",
+                        paddingHorizontal: 10,
+                        paddingVertical: 5,
+                    }}>
+                        Add
                     </Text>
-                <TouchableOpacity>
-                    <Ionicons name="add-circle" size={36} color="black" />
                 </TouchableOpacity>
             </View>
-                {currentData == null ? <SingleSplitEmpty splitday={currentSplit}/> : <SplitFlatList data ={dummyDataLegs}/> } 
-            
+            <View style={{
+                height: "100%",
+                marginTop: 10
+            }}>
+                <TabView
+                    renderTabBar={renderTabBar}
+                    navigationState={{ index, routes }}
+                    renderScene={renderScene}
+                    onIndexChange={setIndex}
+                />
+            </View>
+            <AddExcercise visible={showAddModal} setVisible={setShowAddModal} split={routes[index].title}/>
         </SafeAreaView>
     )
 }
 
 const styles = StyleSheet.create({
-    headerContainer:{
-        // alignSelf:"center",
+    headerContainer: {
         flexDirection: 'row',
-        // backgroundColor: '#d3d3d3',
-        // borderRadius: 45,
         alignItems: 'center',
-        // padding: '2%',
-        justifyContent: 'space-around',
-        alignContent:'center',
-        // width: "40%",
-        // borderWidth:2,
-        // marginTop: '2%',
+        alignContent: 'center',
+        marginHorizontal: "5%",
+        alignSelf: "flex-end",
     },
-    headerText:{
+    headerText: {
         fontSize: 26,
         fontFamily: fonts.main,
         opacity: .5
     },
     authContainer: {
-        width:'80%',
+        width: '80%',
         // marginTop: '5%',
-        alignSelf:"center",
-        justifyContent:'center',
-        borderWidth:2,
+        alignSelf: "center",
+        justifyContent: 'center',
+        borderWidth: 2,
         borderRadius: 45,
         backgroundColor: color.primary,
     },
-    titleText:{
+    titleText: {
         textAlign: 'center',
         fontSize: 20,
-        padding:'5%',
+        padding: '5%',
         fontFamily: fonts.main
     },
 });
