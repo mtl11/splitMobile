@@ -10,7 +10,7 @@ import {
   Modal,
   FlatList,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useCallback, useContext } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import color from "../../constants/color";
 import fonts from "../../constants/fonts";
@@ -21,29 +21,92 @@ import pushWorkouts from "../../assets/data/pushWorkouts";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 import { RectButton } from "react-native-gesture-handler";
 import { Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { WorkoutContext } from "../../store/workoutContext";
 
 const AddExcercise = (props) => {
-  const [text, setText] = useState("");
-  const [search, setSearch] = useState("");
-
-  const updateSearch = (search) => {
-    setSearch(search);
-  };
+  const workoutContext = useContext(WorkoutContext);
   const [data, setData] = useState([
     {
       Reps: "",
-      Wieght: "",
+      Weight: "",
       TypeOfWeight: "lbs",
     },
     {
       Reps: "",
-      Wieght: "",
+      Weight: "",
       TypeOfWeight: "lbs",
     },
   ]);
   const [selectedItem, setSelectedItem] = useState(null);
 
-  function RenderItem({ item }) {
+  function emptyInputHelper() {
+    for (const item in data) {
+      if (data[item].Reps == "") {
+        return true;
+      }
+      if (data[item].Weight == "") {
+        return true;
+      }
+    }
+    return false;
+  }
+  const [errorText, setErrorText] = useState("");
+
+  async function AddWorkout() {
+    const workout = {
+      workout: selectedItem,
+      sets: data,
+    };
+    if (selectedItem == null) {
+      setErrorText("Please choose a workout.");
+    } else if (emptyInputHelper()) {
+      setErrorText("Please fill out all sets.");
+    } else {
+      setErrorText("");
+      if (props.split == "Push") {
+        if (workoutContext.pushExercises != null) {
+          const newWorkouts = [...workoutContext.pushExercises, workout];
+          workoutContext.setPushExercises(newWorkouts);
+          await AsyncStorage.setItem(
+            "pushWorkouts",
+            JSON.stringify(newWorkouts)
+          );
+        } else {
+          workoutContext.setPushExercises([workout]);
+          await AsyncStorage.setItem("pushWorkouts", JSON.stringify([workout]));
+        }
+      }
+      if (props.split == "Pull") {
+        if (workoutContext.pullExercises != null) {
+          const newWorkouts = [...workoutContext.pullExercises, workout];
+          workoutContext.setPullExercises(newWorkouts);
+          await AsyncStorage.setItem(
+            "pullExercises",
+            JSON.stringify(newWorkouts)
+          );
+        } else {
+          workoutContext.setPullExercises([workout]);
+          await AsyncStorage.setItem("pullWorkouts", JSON.stringify([workout]));
+        }
+      }
+      if (props.split == "Legs") {
+        if (workoutContext.legExercises != null) {
+          const newWorkouts = [...workoutContext.legExercises, workout];
+          workoutContext.setLegExercises(newWorkouts);
+          await AsyncStorage.setItem(
+            "legWorkouts",
+            JSON.stringify(newWorkouts)
+          );
+        } else {
+          workoutContext.setLegExercises([workout]);
+          await AsyncStorage.setItem("legWorkouts", JSON.stringify([workout]));
+        }
+      }
+    }
+  }
+
+  const RenderItem = useCallback(({ item }) => {
     const set = item.index + 1;
     const [measurement, setMeasurement] = useState(item.item.TypeOfWeight);
     const [reps, setReps] = useState(item.item.Reps);
@@ -144,6 +207,7 @@ const AddExcercise = (props) => {
                 fontSize: 16,
               }}
               maxLength={3}
+              returnKeyType="done"
               placeholder={"    "}
               value={weight}
               inputMode="numeric"
@@ -191,7 +255,7 @@ const AddExcercise = (props) => {
         </View>
       </Swipeable>
     );
-  }
+  });
 
   return (
     <Modal visible={props.visible} animationType="slide">
@@ -225,6 +289,9 @@ const AddExcercise = (props) => {
           </View>
           <View style={{ marginTop: "5%" }}>
             <AutocompleteDropdown
+              onClear={() => {
+                setSelectedItem();
+              }}
               clearOnFocus={false}
               closeOnSubmit={false}
               onSelectItem={setSelectedItem}
@@ -256,8 +323,8 @@ const AddExcercise = (props) => {
                   backgroundColor: color.secondary,
                   paddingLeft: 18,
                   color: "white",
-                  fontFamily: fonts.mainLightBold,
-                  fontSize: 16,
+                  fontFamily: fonts.main,
+                  fontSize: 18,
                 },
               }}
               inputContainerStyle={{
@@ -298,7 +365,7 @@ const AddExcercise = (props) => {
                       ...data,
                       {
                         Reps: "",
-                        Wieght: "",
+                        Weight: "",
                         TypeOfWeight: "lbs",
                       },
                     ]);
@@ -321,9 +388,26 @@ const AddExcercise = (props) => {
             )}
           </View>
           <View style={{ flex: 1, justifyContent: "flex-end" }}>
+            <View>
+              {errorText != "" && (
+                <Text
+                  style={{
+                    fontSize: 18,
+                    fontFamily: fonts.mainBold,
+                    color: "white",
+                    textAlign: "center",
+                    paddingHorizontal: 10,
+                    paddingVertical: 10,
+                  }}
+                >
+                  {errorText}
+                </Text>
+              )}
+            </View>
             <TouchableOpacity
               style={{
                 marginBottom: "10%",
+                marginTop: "5%",
                 width: "90%",
                 borderWidth: 1.5,
                 borderRadius: 100,
@@ -331,7 +415,9 @@ const AddExcercise = (props) => {
                 borderColor: color.buttonAccent,
                 backgroundColor: color.buttonAccent,
               }}
-              onPress={() => {}}
+              onPress={() => {
+                AddWorkout();
+              }}
             >
               <Text
                 style={{

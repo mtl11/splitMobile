@@ -17,18 +17,6 @@ import { TabView, SceneMap } from "react-native-tab-view";
 import AddExcercise from "../components/splits/AddExcercise";
 import WorkoutList from "../components/splits/WorkoutList";
 const SplitScreen = (props) => {
-  const dummyDataPull = null;
-  const dummyDataPush = { Eggs: "eggs" };
-  const dummyDataLegs = [
-    {
-      name: "Bench Press",
-      complete: false,
-    },
-    {
-      name: "Dips",
-      complete: true,
-    },
-  ];
   const [showAddModal, setShowAddModal] = useState(false);
 
   const Push = () => <WorkoutList type={"Push"}/>;
