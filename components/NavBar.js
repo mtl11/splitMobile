@@ -30,7 +30,6 @@ export default Home = () => {
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
-
           if (route.name === "Max Reps") {
             iconName = focused ? "md-bar-chart" : "md-bar-chart-outline";
           } else if (route.name === "Settings") {
