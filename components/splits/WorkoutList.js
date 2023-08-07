@@ -11,7 +11,13 @@ import {
   FlatList,
   TouchableWithoutFeedback,
 } from "react-native";
-import React, { useEffect, useState, useContext, useRef } from "react";
+import React, {
+  useEffect,
+  useState,
+  useContext,
+  useRef,
+  useCallback,
+} from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import fonts from "../../constants/fonts";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -20,10 +26,13 @@ import color from "../../constants/color";
 import { Entypo } from "@expo/vector-icons";
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import { Ionicons } from "@expo/vector-icons";
+import { AnimatedCircularProgress } from "react-native-circular-progress";
 
 const WorkoutList = (props) => {
   const workoutContext = useContext(WorkoutContext);
   const [data, setData] = useState();
+  const [finishedSets, setFinishedSets] = useState(0);
+  const [totalSets, setTotalSets] = useState(0);
 
   async function getWorkouts(type) {
     if (type == "Pull") {
@@ -79,6 +88,7 @@ const WorkoutList = (props) => {
             onPress={() => {
               setIsChecked(!isChecked);
               saveChecked(item, !isChecked);
+              setFinishedSets(finishedSets + 1);
             }}
             isChecked={isChecked}
           />
@@ -115,26 +125,32 @@ const WorkoutList = (props) => {
       </Animated.View>
     );
   };
-
-  const RenderItem = (item) => {
-    const [isExpanded, setIsExpanded] = useState(false);
+  // function helper(){
+  //   setfinishedSets(finishedsets+1);
+  // }
+  const RenderItem = useCallback((item) => {
+    const [isExpanded, setIsExpanded] = useState(item.item.keepOpen);
     const workout = item.item.workout;
     const sets = item.item.sets;
     let reps = 0;
+
     for (const x in sets) {
       reps += parseInt(sets[x].Reps);
     }
+
     async function saveChecked(info, isChecked) {
       sets[info.index] = { ...info.item, isChecked: isChecked };
       const type = props.type;
-      if (type == "Pull") {
-          await AsyncStorage.setItem("pullWorkouts",JSON.stringify(data));
-      }
-      if (type == "Push") {
-        await AsyncStorage.setItem("pushWorkouts",JSON.stringify(data));
-      }
-      if (type == "Legs") {
-        await AsyncStorage.setItem("legWorkouts",JSON.stringify(data));
+      if (data != null) {
+        if (type == "Pull") {
+          await AsyncStorage.setItem("pullWorkouts", JSON.stringify(data));
+        }
+        if (type == "Push") {
+          await AsyncStorage.setItem("pushWorkouts", JSON.stringify(data));
+        }
+        if (type == "Legs") {
+          await AsyncStorage.setItem("legWorkouts", JSON.stringify(data));
+        }
       }
     }
 
@@ -155,6 +171,7 @@ const WorkoutList = (props) => {
           style={{ alignItems: "center" }}
           onPress={() => {
             setIsExpanded(!isExpanded);
+            item.item.keepOpen = !isExpanded;
           }}
         >
           {isExpanded ? (
@@ -173,16 +190,120 @@ const WorkoutList = (props) => {
         </TouchableOpacity>
       </View>
     );
-  };
-  
+  }, []);
+
+  useEffect(() => {
+    var finished = 0;
+    var total = 0;
+    if (data != undefined) {
+      for (const x in data) {
+        total += data[x].sets.length;
+        for (const y in data[x].sets) {
+          if (data[x].sets[y].isChecked == true) {
+            finished += 1;
+          }
+        }
+      }
+      setFinishedSets(finished);
+      setTotalSets(total);
+    }
+  });
   return (
     <View>
       <FlatList
         contentContainerStyle={styles.listContainer}
         data={data}
         renderItem={({ item, index }) => {
-          return <RenderItem item={item} index={index}/>;
+          return <RenderItem item={item} index={index} />;
         }}
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          <View
+            style={{
+              width: "90%",
+              height: 100,
+              justifyContent: "space-between",
+              backgroundColor: color.primaryGray,
+              borderWidth: 1,
+              borderColor: color.icon,
+              borderRadius: 12,
+              marginTop: "5%",
+              alignSelf: "center",
+              padding: 16,
+              flexDirection: "row",
+            }}
+          >
+            <View>
+              <Text
+                style={{
+                  fontFamily: fonts.main,
+                  color: "white",
+                  fontSize: 18,
+                }}
+              >
+                {props.type} Workout Summary
+              </Text>
+              <Text
+                style={{
+                  fontFamily: fonts.mainLightBold,
+                  color: "white",
+                  fontSize: 16,
+                }}
+              >
+                {finishedSets} of {totalSets} Sets Completed
+              </Text>
+            </View>
+            <AnimatedCircularProgress
+              size={70}
+              width={5}
+              fill={(finishedSets / totalSets) * 100}
+              tintColor={color.icon}
+              backgroundColor={color.secondary}
+            >
+              {() => (
+                <View>
+                  <Text
+                    style={{
+                      fontFamily: fonts.main,
+                      color: "white",
+                      fontSize: 18,
+                    }}
+                  >
+                    {Math.round((finishedSets / totalSets) * 1000) / 10}%
+                  </Text>
+                </View>
+              )}
+            </AnimatedCircularProgress>
+          </View>
+        }
+        ListFooterComponent={
+          <TouchableOpacity
+            onPress={() => {
+              props.setShowAddModal(true);
+            }}
+            style={{
+              borderWidth: 1.5,
+              borderRadius: 100,
+              width: "90%",
+              borderColor: color.buttonAccent,
+              alignSelf: "center",
+              marginTop: "2.5%",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 18,
+                fontFamily: fonts.mainBold,
+                color: color.buttonAccent,
+                textAlign: "center",
+                paddingHorizontal: 10,
+                paddingVertical: 10,
+              }}
+            >
+              Add Workout
+            </Text>
+          </TouchableOpacity>
+        }
         ListEmptyComponent={
           <View style={styles.listEmptyContainer}>
             <MaterialCommunityIcons
@@ -221,7 +342,9 @@ const styles = StyleSheet.create({
     marginTop: "30%",
   },
   listContainer: {
-    height: "100%",
+    // height: "100%",
+    // flex:1,
+    paddingBottom: 100,
   },
   workoutDetailsText: {
     color: "white",
@@ -254,6 +377,11 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 18,
     paddingHorizontal: 16,
+  },
+  headerContainer: {
+    alignContent: "center",
+    marginHorizontal: "5%",
+    alignSelf: "flex-end",
   },
 });
 

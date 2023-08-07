@@ -16,12 +16,13 @@ import fonts from "../constants/fonts";
 import { TabView, SceneMap } from "react-native-tab-view";
 import AddExcercise from "../components/splits/AddExcercise";
 import WorkoutList from "../components/splits/WorkoutList";
+
 const SplitScreen = (props) => {
   const [showAddModal, setShowAddModal] = useState(false);
 
-  const Push = () => <WorkoutList type={"Push"}/>;
-  const Pull = () => <WorkoutList type={"Pull"}/>;
-  const Legs = () => <WorkoutList type={"Legs"}/>;
+  const Push = () => <WorkoutList type={"Push"} setShowAddModal={setShowAddModal}/>;
+  const Pull = () => <WorkoutList type={"Pull"} setShowAddModal={setShowAddModal}/>;
+  const Legs = () => <WorkoutList type={"Legs"} setShowAddModal={setShowAddModal}/>;
 
   const renderScene = SceneMap({
     first: Push,
@@ -95,32 +96,7 @@ const SplitScreen = (props) => {
   };
   return (
     <SafeAreaView style={{ backgroundColor: color.background }}>
-      <View style={styles.headerContainer}>
-        <TouchableOpacity
-          onPress={() => {
-            setShowAddModal(true);
-          }}
-          style={{
-            borderWidth: 1.5,
-            borderRadius: 100,
-            width: "25%",
-            borderColor: color.buttonAccent,
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 18,
-              fontFamily: fonts.mainBold,
-              color: color.buttonAccent,
-              textAlign: "center",
-              paddingHorizontal: 10,
-              paddingVertical: 10,
-            }}
-          >
-            Add
-          </Text>
-        </TouchableOpacity>
-      </View>
+     
       <View
         style={{
           height: "100%",
