@@ -115,6 +115,7 @@ const SplitScreen = (props) => {
         setVisible={setShowAddModal}
         split={routes[index].title}
       />
+     
     </SafeAreaView>
   );
 };

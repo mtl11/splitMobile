@@ -6,8 +6,9 @@ import {
   SafeAreaView,
   Modal,
   FlatList,
+  Alert,
 } from "react-native";
-import React, { useState, useCallback, useContext } from "react";
+import React, { useState, useCallback, useContext, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import color from "../../constants/color";
 import fonts from "../../constants/fonts";
@@ -19,22 +20,10 @@ import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { WorkoutContext } from "../../store/workoutContext";
 
-const AddExcercise = (props) => {
+const EditExcercise = (props) => {
   const workoutContext = useContext(WorkoutContext);
-  const [data, setData] = useState([
-    {
-      Reps: "",
-      Weight: "",
-      TypeOfWeight: "lbs",
-    },
-    {
-      Reps: "",
-      Weight: "",
-      TypeOfWeight: "lbs",
-    },
-  ]);
-  const [selectedItem, setSelectedItem] = useState(null);
-
+  const [data, setData] = useState([]);
+  const [selectedItem, setSelectedItem] = useState(props.workout);
   function emptyInputHelper() {
     for (const item in data) {
       if (data[item].Reps == "") {
@@ -48,7 +37,46 @@ const AddExcercise = (props) => {
   }
   const [errorText, setErrorText] = useState("");
 
-  async function AddWorkout() {
+  const deleteWorkoutAlert = () => {
+    Alert.alert("Delete this workout?", "This can not be undone", [
+      {
+        text: "Cancel",
+        onPress: () => {},
+        style: "destructive",
+      },
+      {
+        text: "Delete",
+        onPress: () => {
+          deleteWorkout();
+        },
+        style: "destructive",
+      },
+    ]);
+  };
+
+  async function deleteWorkout() {
+    console.log(props.index);
+    if (props.split == "Push") {
+      workoutContext.pushExercises.splice(props.index, 1);
+      await AsyncStorage.setItem(
+        "pushWorkouts",
+        JSON.stringify(workoutContext.pushExercises)
+      );
+    }
+    if (props.split == "Pull") {
+      workoutContext.pullExercises.splice(props.index, 1);
+      await AsyncStorage.setItem(
+        "pullExercises",
+        JSON.stringify(workoutContext.pullExercises)
+      );
+    }
+    if (props.split == "Legs") {
+      workoutContext.legExercises.splice(props.index, 1);
+      await AsyncStorage.setItem("legWorkouts", workoutContext.legExercises);
+    }
+    props.setVisible(false);
+  }
+  async function editWorkout() {
     const workout = {
       workout: selectedItem,
       sets: data,
@@ -57,18 +85,17 @@ const AddExcercise = (props) => {
       setErrorText("Please choose a workout.");
     } else if (emptyInputHelper()) {
       setErrorText("Please fill out all sets.");
-    } 
-    else if (data.length ==0 ) {
+    } else if (data.length == 0) {
       setErrorText("Minimum require number of sets is 1");
-    }else {
+    } else {
       setErrorText("");
       if (props.split == "Push") {
         if (workoutContext.pushExercises != null) {
-          const newWorkouts = [...workoutContext.pushExercises, workout];
-          workoutContext.setPushExercises(newWorkouts);
+          workoutContext.pushExercises[props.index].sets = data;
+          workoutContext.pushExercises[props.index].workout = selectedItem;
           await AsyncStorage.setItem(
             "pushWorkouts",
-            JSON.stringify(newWorkouts)
+            JSON.stringify(workoutContext.pushExercises)
           );
         } else {
           workoutContext.setPushExercises([workout]);
@@ -77,11 +104,11 @@ const AddExcercise = (props) => {
       }
       if (props.split == "Pull") {
         if (workoutContext.pullExercises != null) {
-          const newWorkouts = [...workoutContext.pullExercises, workout];
-          workoutContext.setPullExercises(newWorkouts);
+          workoutContext.pullExercises[props.index].sets = data;
+          workoutContext.pullExercises[props.index].workout = selectedItem;
           await AsyncStorage.setItem(
             "pullExercises",
-            JSON.stringify(newWorkouts)
+            JSON.stringify(workoutContext.pullExercises)
           );
         } else {
           workoutContext.setPullExercises([workout]);
@@ -90,11 +117,11 @@ const AddExcercise = (props) => {
       }
       if (props.split == "Legs") {
         if (workoutContext.legExercises != null) {
-          const newWorkouts = [...workoutContext.legExercises, workout];
-          workoutContext.setLegExercises(newWorkouts);
+          workoutContext.legExercises[props.index].sets = data;
+          workoutContext.legExercises[props.index].workout = selectedItem;
           await AsyncStorage.setItem(
             "legWorkouts",
-            JSON.stringify(newWorkouts)
+            workoutContext.legExercises
           );
         } else {
           workoutContext.setLegExercises([workout]);
@@ -110,6 +137,7 @@ const AddExcercise = (props) => {
     const [measurement, setMeasurement] = useState(item.item.TypeOfWeight);
     const [reps, setReps] = useState(item.item.Reps);
     const [weight, setWeight] = useState(item.item.Weight);
+    //   const [isChecked, s]
     const renderRight = (progress, dragX) => {
       const trans = dragX.interpolate({
         inputRange: [0, 50, 100, 101],
@@ -119,6 +147,7 @@ const AddExcercise = (props) => {
         <TouchableOpacity
           style={{ justifyContent: "center", marginHorizontal: "5%" }}
           onPress={() => {
+
             const x = data.splice(item.index, 1);
             setData([...data]);
           }}
@@ -180,6 +209,7 @@ const AddExcercise = (props) => {
                   Reps: reps,
                   Weight: weight,
                   TypeOfWeight: measurement,
+                  isChecked: item.item.isChecked,
                 };
                 setData(data);
               }}
@@ -216,6 +246,7 @@ const AddExcercise = (props) => {
                   Reps: reps,
                   Weight: weight,
                   TypeOfWeight: measurement,
+                  isChecked: item.item.isChecked,
                 };
                 setData(data);
               }}
@@ -229,6 +260,7 @@ const AddExcercise = (props) => {
                   Reps: reps,
                   Weight: weight,
                   TypeOfWeight: "kgs",
+                  isChecked: item.item.isChecked,
                 };
               } else {
                 setMeasurement("lbs");
@@ -236,6 +268,7 @@ const AddExcercise = (props) => {
                   Reps: reps,
                   Weight: weight,
                   TypeOfWeight: "lbs",
+                  isChecked: item.item.isChecked,
                 };
               }
               setData(data);
@@ -256,6 +289,9 @@ const AddExcercise = (props) => {
     );
   });
 
+  useEffect(() => {
+    setData([...props.sets]);
+  }, [props]);
   return (
     <Modal visible={props.visible} animationType="slide">
       <AutocompleteDropdownContextProvider>
@@ -267,6 +303,7 @@ const AddExcercise = (props) => {
             }}
             onPress={() => {
               props.setVisible(false);
+              setErrorText("");
             }}
           >
             <Ionicons
@@ -283,7 +320,7 @@ const AddExcercise = (props) => {
                 fontSize: 20,
               }}
             >
-              Add {props.split} Workout
+              Edit {props.split} Workout
             </Text>
           </View>
           <View style={{ marginTop: "5%" }}>
@@ -291,6 +328,7 @@ const AddExcercise = (props) => {
               onClear={() => {
                 setSelectedItem();
               }}
+              // initialValue={props.workout}
               clearOnFocus={false}
               closeOnSubmit={false}
               onSelectItem={setSelectedItem}
@@ -337,6 +375,7 @@ const AddExcercise = (props) => {
               showChevron={false}
               onBlur={() => {}}
               closeOnBlur={false}
+              initialValue={props.workout}
             />
             <FlatList
               style={{
@@ -405,7 +444,7 @@ const AddExcercise = (props) => {
             </View>
             <TouchableOpacity
               style={{
-                marginBottom: "10%",
+                // marginBottom: "10%",
                 marginTop: "5%",
                 width: "90%",
                 borderWidth: 1.5,
@@ -415,8 +454,7 @@ const AddExcercise = (props) => {
                 backgroundColor: color.buttonAccent,
               }}
               onPress={() => {
-                AddWorkout();
-                
+                editWorkout();
               }}
             >
               <Text
@@ -429,7 +467,35 @@ const AddExcercise = (props) => {
                   paddingVertical: 10,
                 }}
               >
-                Add Workout
+                Save Changes
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                marginBottom: "10%",
+                marginTop: "5%",
+                width: "90%",
+                borderWidth: 1.5,
+                borderRadius: 100,
+                alignSelf: "center",
+                borderColor: color.buttonAccent,
+                // backgroundColor: color.buttonAccent,
+              }}
+              onPress={() => {
+                deleteWorkoutAlert();
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontFamily: fonts.mainBold,
+                  color: color.icon,
+                  textAlign: "center",
+                  paddingHorizontal: 10,
+                  paddingVertical: 10,
+                }}
+              >
+                Delete Workout
               </Text>
             </TouchableOpacity>
           </View>
@@ -439,4 +505,4 @@ const AddExcercise = (props) => {
   );
 };
 
-export default AddExcercise;
+export default EditExcercise;

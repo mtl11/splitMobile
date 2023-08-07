@@ -17,6 +17,7 @@ import React, {
   useContext,
   useRef,
   useCallback,
+  useMemo,
 } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import fonts from "../../constants/fonts";
@@ -27,11 +28,17 @@ import { Entypo } from "@expo/vector-icons";
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import { Ionicons } from "@expo/vector-icons";
 import { AnimatedCircularProgress } from "react-native-circular-progress";
+import { Feather } from "@expo/vector-icons";
+import EditExcercise from "./EditExcercise";
 
 const WorkoutList = (props) => {
   const workoutContext = useContext(WorkoutContext);
   const [data, setData] = useState();
   const [finishedSets, setFinishedSets] = useState(0);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editWorkout, setEditWorkout] = useState({});
+  const [editSets, setEditSets] = useState([]);
+  const [editIndex, setEditIndex] = useState(0);
   const [totalSets, setTotalSets] = useState(0);
 
   async function getWorkouts(type) {
@@ -88,7 +95,7 @@ const WorkoutList = (props) => {
             onPress={() => {
               setIsChecked(!isChecked);
               saveChecked(item, !isChecked);
-              setFinishedSets(finishedSets + 1);
+              setFinishedSets();
             }}
             isChecked={isChecked}
           />
@@ -125,8 +132,9 @@ const WorkoutList = (props) => {
       </Animated.View>
     );
   };
-  // function helper(){
-  //   setfinishedSets(finishedsets+1);
+  // function showEdit(sets, workout){
+
+  //   return (<EditExcercise sets={sets} workout={workout} visible={true}/>)
   // }
   const RenderItem = useCallback((item) => {
     const [isExpanded, setIsExpanded] = useState(item.item.keepOpen);
@@ -140,6 +148,7 @@ const WorkoutList = (props) => {
 
     async function saveChecked(info, isChecked) {
       sets[info.index] = { ...info.item, isChecked: isChecked };
+
       const type = props.type;
       if (data != null) {
         if (type == "Pull") {
@@ -156,11 +165,34 @@ const WorkoutList = (props) => {
 
     return (
       <View style={styles.workoutContainer} key={item.index}>
-        <Text style={styles.workoutTitle}>{workout.title}</Text>
-        <View style={styles.workoutDetailsContainer}>
-          <Text style={styles.workoutDetailsText}>{sets.length} Sets</Text>
-          <Entypo name="dot-single" size={30} color="white" />
-          <Text style={styles.workoutDetailsText}>{reps} Reps</Text>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <View>
+            <Text style={styles.workoutTitle}>{workout.title}</Text>
+            <View style={styles.workoutDetailsContainer}>
+              <Text style={styles.workoutDetailsText}>{sets.length} Sets</Text>
+              <Entypo name="dot-single" size={30} color="white" />
+              <Text style={styles.workoutDetailsText}>{reps} Reps</Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            style={{ padding: 16 }}
+            onPress={() => {
+              // console.log(item.item)
+              setEditSets(item.item.sets);
+              setEditIndex(item.index);
+              setEditWorkout(item.item.workout);
+              
+              setShowEditModal(true);
+            }}
+          >
+            <Feather name="edit-2" size={24} color={color.icon} />
+          </TouchableOpacity>
         </View>
         <WorkoutRow
           expanded={isExpanded}
@@ -192,32 +224,26 @@ const WorkoutList = (props) => {
     );
   }, []);
 
-  useEffect(() => {
-    var finished = 0;
-    var total = 0;
-    if (data != undefined) {
-      for (const x in data) {
-        total += data[x].sets.length;
-        for (const y in data[x].sets) {
-          if (data[x].sets[y].isChecked == true) {
-            finished += 1;
+  const RenderListHeader = () => {
+    useEffect(() => {
+      var finished = 0;
+      var total = 0;
+      if (data != undefined) {
+        for (const x in data) {
+          total += data[x].sets.length;
+          for (const y in data[x].sets) {
+            if (data[x].sets[y].isChecked == true) {
+              finished += 1;
+            }
           }
         }
+        setFinishedSets(finished);
+        setTotalSets(total);
       }
-      setFinishedSets(finished);
-      setTotalSets(total);
-    }
-  });
-  return (
-    <View>
-      <FlatList
-        contentContainerStyle={styles.listContainer}
-        data={data}
-        renderItem={({ item, index }) => {
-          return <RenderItem item={item} index={index} />;
-        }}
-        showsVerticalScrollIndicator={false}
-        ListHeaderComponent={
+    }, [finishedSets]);
+    return (
+      <View>
+        {data && (
           <View
             style={{
               width: "90%",
@@ -275,7 +301,22 @@ const WorkoutList = (props) => {
               )}
             </AnimatedCircularProgress>
           </View>
-        }
+        )}
+      </View>
+    );
+  };
+
+  return (
+    <View>
+      <FlatList
+        contentContainerStyle={styles.listContainer}
+        data={data}
+        scrollEnabled={data ? true : false}
+        renderItem={({ item, index }) => {
+          return <RenderItem item={item} index={index} />;
+        }}
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={RenderListHeader}
         ListFooterComponent={
           <TouchableOpacity
             onPress={() => {
@@ -319,6 +360,14 @@ const WorkoutList = (props) => {
           </View>
         }
       />
+      <EditExcercise
+        visible={showEditModal}
+        setVisible={setShowEditModal}
+        sets={editSets}
+        workout={editWorkout}
+        split={props.type}
+        index={editIndex}
+      />
     </View>
   );
 };
@@ -342,8 +391,6 @@ const styles = StyleSheet.create({
     marginTop: "30%",
   },
   listContainer: {
-    // height: "100%",
-    // flex:1,
     paddingBottom: 100,
   },
   workoutDetailsText: {
