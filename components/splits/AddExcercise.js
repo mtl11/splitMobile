@@ -18,6 +18,8 @@ import Swipeable from "react-native-gesture-handler/Swipeable";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { WorkoutContext } from "../../store/workoutContext";
+import pullWorkouts from "../../assets/data/pullWorkouts";
+import legWorkouts from "../../assets/data/legWorkouts";
 
 const AddExcercise = (props) => {
   const workoutContext = useContext(WorkoutContext);
@@ -57,10 +59,9 @@ const AddExcercise = (props) => {
       setErrorText("Please choose a workout.");
     } else if (emptyInputHelper()) {
       setErrorText("Please fill out all sets.");
-    } 
-    else if (data.length ==0 ) {
+    } else if (data.length == 0) {
       setErrorText("Minimum require number of sets is 1");
-    }else {
+    } else {
       setErrorText("");
       if (props.split == "Push") {
         if (workoutContext.pushExercises != null) {
@@ -294,7 +295,18 @@ const AddExcercise = (props) => {
               clearOnFocus={false}
               closeOnSubmit={false}
               onSelectItem={setSelectedItem}
-              dataSet={pushWorkouts.pushWorkouts}
+              dataSet={() => {
+                if (props.split == "Push") {
+                  return pushWorkouts.data;
+                }
+                if (props.split == "Legs") {
+                  return legWorkouts.data;
+                }
+                if (props.split == "Pull") {
+                  return pullWorkouts.data;
+                }
+                return [];
+              }}
               containerStyle={{
                 backgroundColor: color.icon,
                 borderRadius: 1000,
@@ -416,7 +428,6 @@ const AddExcercise = (props) => {
               }}
               onPress={() => {
                 AddWorkout();
-                
               }}
             >
               <Text

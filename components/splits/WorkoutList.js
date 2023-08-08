@@ -102,7 +102,7 @@ const WorkoutList = (props) => {
         </View>
       );
     };
-
+    // console.log(data[0]);
     useEffect(() => {
       Animated.timing(height, {
         toValue: !expanded ? 0 : 50 * sets.length,
@@ -150,6 +150,7 @@ const WorkoutList = (props) => {
       sets[info.index] = { ...info.item, isChecked: isChecked };
 
       const type = props.type;
+      console.log(type);
       if (data != null) {
         if (type == "Pull") {
           await AsyncStorage.setItem("pullWorkouts", JSON.stringify(data));

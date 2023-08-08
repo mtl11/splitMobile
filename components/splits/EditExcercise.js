@@ -14,13 +14,15 @@ import color from "../../constants/color";
 import fonts from "../../constants/fonts";
 import { AutocompleteDropdown } from "react-native-autocomplete-dropdown";
 import { AutocompleteDropdownContextProvider } from "react-native-autocomplete-dropdown";
-import pushWorkouts from "../../assets/data/pushWorkouts";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { WorkoutContext } from "../../store/workoutContext";
-
+import legWorkouts from "../../assets/data/legWorkouts";
+import pushWorkouts from "../../assets/data/pushWorkouts";
+import pullWorkouts from "../../assets/data/pullWorkouts";
 const EditExcercise = (props) => {
+  console.log(props.split)
   const workoutContext = useContext(WorkoutContext);
   const [data, setData] = useState([]);
   const [selectedItem, setSelectedItem] = useState(props.workout);
@@ -121,7 +123,7 @@ const EditExcercise = (props) => {
           workoutContext.legExercises[props.index].workout = selectedItem;
           await AsyncStorage.setItem(
             "legWorkouts",
-            workoutContext.legExercises
+            JSON.stringify(workoutContext.legExercises)
           );
         } else {
           workoutContext.setLegExercises([workout]);
@@ -328,11 +330,23 @@ const EditExcercise = (props) => {
               onClear={() => {
                 setSelectedItem();
               }}
-              // initialValue={props.workout}
+              initialValue={props.workout}
               clearOnFocus={false}
               closeOnSubmit={false}
               onSelectItem={setSelectedItem}
-              dataSet={pushWorkouts.pushWorkouts}
+              dataSet={()=>{
+                if(props.split == "Push"){
+                  return pushWorkouts.data
+                }
+                if(props.split == "Legs"){
+                  return legWorkouts.data
+                }
+                if(props.split == "Pull"){
+                  return pullWorkouts.data
+                }else{
+                  return [];
+                }
+              }}
               containerStyle={{
                 backgroundColor: color.icon,
                 borderRadius: 1000,
@@ -375,7 +389,6 @@ const EditExcercise = (props) => {
               showChevron={false}
               onBlur={() => {}}
               closeOnBlur={false}
-              initialValue={props.workout}
             />
             <FlatList
               style={{
