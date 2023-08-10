@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import SplitScreen from "../screens/SplitScreen";
-import WorkoutScreen from "../screens/WorkoutScreen";
+import MaxRepScreen from "../screens/MaxRepScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import { Ionicons } from "@expo/vector-icons";
 import color from "../constants/color";
@@ -44,7 +44,11 @@ export default Home = () => {
         tabBarStyle: { backgroundColor: color.background },
       })}
     >
-      <Tab.Screen name="Max Reps" component={WorkoutScreen} />
+      <Tab.Screen
+        name="Max Reps"
+        component={MaxRepScreen}
+        options={{ headerShown: false }}
+      />
       <Tab.Screen
         name="Splits"
         component={SplitScreen}

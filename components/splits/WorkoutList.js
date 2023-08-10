@@ -73,25 +73,35 @@ const WorkoutList = (props) => {
             padding: 10,
           }}
         >
-          <View>
-            <Text style={styles.checkBoxText}>
-              {"Set " +
-                setNumber +
-                " = " +
-                item.item.Reps +
-                " Reps x " +
-                item.item.Weight +
-                " " +
-                item.item.TypeOfWeight}
-            </Text>
-          </View>
           <BouncyCheckbox
+            textComponent={
+              <View>
+                <Text
+                  style={[
+                    styles.checkBoxText,
+                    // isChecked && { textDecorationLine: "line-through" },
+                  ]}
+                >
+                  {"Set " +
+                    setNumber +
+                    " is " +
+                    item.item.Reps +
+                    " Reps of " +
+                    item.item.Weight +
+                    " " +
+                    item.item.TypeOfWeight}
+                </Text>
+              </View>
+            }
             style={{ justifyContent: "flex-end" }}
             size={25}
+            textStyle={{
+              textDecorationLine: "true",
+            }}
             fillColor="#00CC66"
             unfillColor={color.primaryGray}
             innerIconStyle={{ borderWidth: 2 }}
-            textStyle={{ fontFamily: "JosefinSans-Regular" }}
+            // textStyle={{ fontFamily: "JosefinSans-Regular" }}
             onPress={() => {
               setIsChecked(!isChecked);
               saveChecked(item, !isChecked);
@@ -182,17 +192,17 @@ const WorkoutList = (props) => {
             </View>
           </View>
           <TouchableOpacity
-            style={{ padding: 16 }}
+            style={{ margin: 16, backgroundColor: color.background, padding: 8, borderRadius: 100 }}
             onPress={() => {
               // console.log(item.item)
               setEditSets(item.item.sets);
               setEditIndex(item.index);
               setEditWorkout(item.item.workout);
-              
+
               setShowEditModal(true);
             }}
           >
-            <Feather name="edit-2" size={24} color={color.icon} />
+            <Feather name="edit-2" size={20} color={color.icon} />
           </TouchableOpacity>
         </View>
         <WorkoutRow
@@ -252,7 +262,7 @@ const WorkoutList = (props) => {
               justifyContent: "space-between",
               backgroundColor: color.primaryGray,
               borderWidth: 1,
-              borderColor: color.icon,
+              borderColor: color.secondary,
               borderRadius: 12,
               marginTop: "5%",
               alignSelf: "center",
@@ -284,7 +294,7 @@ const WorkoutList = (props) => {
               size={70}
               width={5}
               fill={(finishedSets / totalSets) * 100}
-              tintColor={color.icon}
+              tintColor={color.mainGreen}
               backgroundColor={color.secondary}
             >
               {() => (

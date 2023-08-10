@@ -51,7 +51,7 @@ const SplitScreen = (props) => {
           const opacity = props.position.interpolate({
             inputRange,
             outputRange: inputRange.map((inputIndex) =>
-              inputIndex === i ? 1 : 0.5
+              inputIndex === i ? 1 : 0.3
             ),
           });
 
@@ -80,14 +80,14 @@ const SplitScreen = (props) => {
                   {route.title}
                 </Animated.Text>
               </View>
-              {index == i && (
+              {/* {index == i && (
                 <View
                   style={[
                     { borderWidth: 1, borderColor: "white" },
                     { width: "50%" },
                   ]}
                 ></View>
-              )}
+              )} */}
             </TouchableOpacity>
           );
         })}

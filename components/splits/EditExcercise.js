@@ -22,10 +22,11 @@ import legWorkouts from "../../assets/data/legWorkouts";
 import pushWorkouts from "../../assets/data/pushWorkouts";
 import pullWorkouts from "../../assets/data/pullWorkouts";
 const EditExcercise = (props) => {
-  console.log(props.split)
   const workoutContext = useContext(WorkoutContext);
   const [data, setData] = useState([]);
-  const [selectedItem, setSelectedItem] = useState(props.workout);
+  const [selectedItem, setSelectedItem] = useState();
+          
+  console.log(props.workout)
   function emptyInputHelper() {
     for (const item in data) {
       if (data[item].Reps == "") {
@@ -109,7 +110,7 @@ const EditExcercise = (props) => {
           workoutContext.pullExercises[props.index].sets = data;
           workoutContext.pullExercises[props.index].workout = selectedItem;
           await AsyncStorage.setItem(
-            "pullExercises",
+            "pullWorkouts",
             JSON.stringify(workoutContext.pullExercises)
           );
         } else {
